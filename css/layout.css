@@ -1,0 +1,216 @@
+/* ═══════════════════════════════════
+   LAYOUT
+   ═══════════════════════════════════ */
+
+/* ── Header (always fixed, never moves) ── */
+header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  background: var(--navy);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 200;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  touch-action: none; /* prevent iPad scroll on header */
+}
+
+header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+
+.header-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 0 12px;
+}
+
+/* Search bar */
+.search-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+}
+
+.search-wrap svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px; height: 15px;
+  color: var(--text3);
+  pointer-events: none;
+}
+
+#search-input {
+  width: 100%;
+  padding: 7px 12px 7px 32px;
+  border-radius: 20px;
+  border: none;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  outline: none;
+  transition: background 0.2s;
+}
+
+#search-input::placeholder { color: rgba(255,255,255,0.45); }
+#search-input:focus { background: rgba(255,255,255,0.2); }
+
+.header-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+/* ── Canvas area ── */
+#canvas-wrap {
+  position: fixed;
+  top: 56px; left: 0; right: 0; bottom: 0;
+  overflow: hidden;
+  touch-action: none; /* we handle all touch manually */
+}
+
+/* dot grid background */
+#canvas-bg {
+  position: absolute;
+  inset: 0;
+  background-color: var(--bg);
+  background-image: radial-gradient(circle, #cbd5e1 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+}
+
+/* whiteboard canvas layer */
+#whiteboard {
+  position: absolute;
+  inset: 0;
+  cursor: crosshair;
+  display: none; /* shown when whiteboard mode active */
+  touch-action: none;
+}
+
+/* tree canvas */
+#tree-canvas {
+  position: absolute;
+  top: 0; left: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+#lines-svg {
+  position: absolute;
+  top: 0; left: 0;
+  overflow: visible;
+  pointer-events: none;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+/* ── Zoom controls (bottom-left) ── */
+.zoom-controls {
+  position: fixed;
+  bottom: 28px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 150;
+}
+
+.zoom-btn {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--navy);
+  transition: background 0.15s;
+}
+.zoom-btn:hover { background: var(--bg2); }
+
+/* ── FAB (bottom-right) ── */
+.fab {
+  position: fixed;
+  bottom: 28px; right: 28px;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  font-size: 26px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(15,23,42,0.3);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.18s, box-shadow 0.18s;
+  z-index: 150;
+}
+.fab:hover { transform: scale(1.07); box-shadow: 0 6px 28px rgba(15,23,42,0.4); }
+
+/* ── Whiteboard toolbar (bottom-center, shown when whiteboard active) ── */
+#wb-toolbar {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  align-items: center;
+  gap: 10px;
+  background: var(--navy);
+  padding: 8px 16px;
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  z-index: 160;
+}
+
+#wb-toolbar.visible { display: flex; }
+
+.wb-tool-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  font-size: 16px;
+}
+.wb-tool-btn.active { border-color: #fff; background: rgba(255,255,255,0.25); }
+.wb-tool-btn:hover  { background: rgba(255,255,255,0.2); }
+
+/* ── Empty state ── */
+#empty-state {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+#empty-state svg { width: 56px; height: 56px; color: var(--text3); margin-bottom: 14px; }
+#empty-state h3  { font-size: 17px; font-weight: 700; color: var(--text2); margin-bottom: 5px; }
+#empty-state p   { font-size: 13px; color: var(--text3); }
+
+/* ── Version badge (bottom-center or corner) ── */
+#version-badge {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--text3);
+  cursor: pointer;
+  z-index: 140;
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.6);
+  transition: background 0.15s;
+}
+#version-badge:hover { background: var(--bg2); color: var(--text2); }

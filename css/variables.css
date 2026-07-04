@@ -1,0 +1,39 @@
+/* ═══════════════════════════════════
+   VARIABLES & RESET
+   ═══════════════════════════════════ */
+:root {
+  --bg:        #f0f4f8;
+  --bg2:       #e2e8f0;
+  --surface:   #ffffff;
+  --navy:      #0f172a;
+  --navy2:     #1e293b;
+  --navy3:     #334155;
+  --accent:    #3b82f6;
+  --pink:      #ec4899;
+  --blue:      #3b82f6;
+  --border:    #cbd5e1;
+  --text:      #0f172a;
+  --text2:     #475569;
+  --text3:     #94a3b8;
+  --shadow:    0 4px 24px rgba(15,23,42,0.10);
+  --radius:    16px;
+
+  /* Tindakan colors */
+  --c-prospek:    #22c55e;
+  --c-rekrut:     #3b82f6;
+  --c-followup:   #a855f7;
+  --c-janjitemu:  #eab308;
+  --c-belumada:   #94a3b8;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow: hidden; /* full canvas app */
+  user-select: none;
+  -webkit-user-select: none;
+}
