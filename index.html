@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Family Tree</title>
+  <link rel="manifest" href="manifest.json" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     HEADER (fixed, never moves)
+══════════════════════════════════════════ -->
+<header>
+  <h1>🌳 Family Tree</h1>
+
+  <div class="header-center">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="search-input" placeholder="Cari nama…" autocomplete="off" />
+    </div>
+  </div>
+
+  <div class="header-actions">
+    <!-- Undo / Redo -->
+    <button class="btn btn-outline" onclick="Actions.undo()" title="Undo (⌘Z)">↩</button>
+    <button class="btn btn-outline" onclick="Actions.redo()" title="Redo (⌘⇧Z)">↪</button>
+    <!-- Whiteboard toggle -->
+    <button class="btn btn-outline" id="wb-toggle-btn" onclick="toggleWhiteboard()" title="Whiteboard">✏️</button>
+    <!-- Bulk remove -->
+    <button class="btn btn-outline" onclick="Actions.openBulkRemove()">🗑 Bulk</button>
+    <!-- Export -->
+    <button class="btn btn-outline" onclick="Export.open()">Export</button>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════
+     CANVAS
+══════════════════════════════════════════ -->
+<div id="canvas-wrap">
+  <div id="canvas-bg"></div>
+  <canvas id="whiteboard"></canvas>
+  <svg id="lines-svg"></svg>
+  <div id="tree-canvas"></div>
+
+  <div id="empty-state">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+    </svg>
+    <h3>Belum ada anggota</h3>
+    <p>Tekan + untuk menambahkan anggota pertama</p>
+  </div>
+</div>
+
+<!-- Zoom controls -->
+<div class="zoom-controls">
+  <button class="zoom-btn" onclick="Canvas.zoomIn()"  title="Zoom In">+</button>
+  <button class="zoom-btn" onclick="Canvas.zoomOut()" title="Zoom Out">−</button>
+</div>
+
+<!-- FAB -->
+<button class="fab" onclick="Form.openAddRoot()">+</button>
+
+<!-- Version badge -->
+<div id="version-badge" onclick="Version.checkUpdate()" title="Klik untuk cek update">v1.00</div>
+
+<!-- Whiteboard toolbar -->
+<div id="wb-toolbar">
+  <button class="wb-tool-btn active" id="wb-pen-btn" onclick="Whiteboard.setTool('pen')" title="Pensil">✏️</button>
+  <button class="wb-tool-btn" id="wb-eraser-btn" onclick="Whiteboard.setTool('eraser')" title="Penghapus">⬜</button>
+  <div style="width:1px;height:20px;background:rgba(255,255,255,0.2);"></div>
+  <button class="wb-tool-btn" onclick="Whiteboard.clearAll()" title="Hapus semua">🗑</button>
+</div>
+
+<!-- ══════════════════════════════════════════
+     NODE POPUP
+══════════════════════════════════════════ -->
+<div id="node-popup">
+  <div class="popup-title" id="popup-person-name">Person</div>
+
+  <button class="popup-btn" onclick="Form.openEdit()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    </svg>
+    Edit Info
+  </button>
+
+  <button class="popup-btn" onclick="Form.openAddRelation('parent')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+    </svg>
+    Tambah Orang Tua ↑
+  </button>
+
+  <button class="popup-btn" onclick="Form.openAddRelation('child')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+      <line x1="12" y1="22" x2="12" y2="16"/><line x1="15" y1="19" x2="9" y2="19"/>
+    </svg>
+    Tambah Anak ↓
+  </button>
+
+  <button class="popup-btn" onclick="Form.openAddRelation('spouse')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+    </svg>
+    Tambah Pasangan →
+  </button>
+
+  <button class="popup-btn danger" onclick="Actions.deletePerson()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="3 6 5 6 21 6"/>
+      <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+      <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+    </svg>
+    Hapus
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════
+     FORM MODAL
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="form-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="form-title">Tambah Anggota</h2>
+      <button class="modal-close" onclick="Form.close()">×</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label class="form-label">Nama</label>
+        <input type="text" class="form-control" id="f-nama" placeholder="Kosongkan → 'Unknown'" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Usia (tahun)</label>
+        <input type="number" class="form-control" id="f-usia" placeholder="Contoh: 35" min="0" max="120" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Gender</label>
+        <div class="gender-toggle">
+          <button class="gender-btn f" id="gb-f" onclick="Form.setGender('F')">♀ Perempuan</button>
+          <button class="gender-btn m" id="gb-m" onclick="Form.setGender('M')">♂ Laki-laki</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Pekerjaan</label>
+        <select class="form-control" id="f-pekerjaan" onchange="Form.toggleDetailVisibility('pekerjaan')">
+          <option value="">Pilih status</option>
+          <option value="Tidak Bekerja">Tidak Bekerja</option>
+          <option value="Bekerja">Bekerja</option>
+        </select>
+        <div class="subsection" id="detail-pekerjaan" style="display:none;">
+          <div class="form-group">
+            <label class="form-label">Detail Pekerjaan</label>
+            <textarea class="form-control" id="f-pekerjaan-detail" placeholder="Contoh: Kerja sama bapak di toko"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Tempat Tinggal</label>
+        <input type="text" class="form-control" id="f-tempat" placeholder="Kota / Wilayah" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Pendidikan</label>
+        <select class="form-control" id="f-pendidikan" onchange="Form.toggleDetailVisibility('pendidikan')">
+          <option value="">Pilih pendidikan</option>
+          <option>PAUD</option><option>SD</option><option>SMP</option>
+          <option>SMA</option><option>KULIAH</option><option>TIDAK SATUPUN</option>
+        </select>
+        <div class="subsection" id="detail-pendidikan" style="display:none;">
+          <div class="form-group">
+            <label class="form-label">Detail Pendidikan</label>
+            <textarea class="form-control" id="f-pendidikan-detail" placeholder="Contoh: Kuliah di UI Teknik Informatika"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Tindakan Terakhir</label>
+        <select class="form-control" id="f-tindakan">
+          <option value="">Pilih tindakan</option>
+          <option value="Prospek">🟢 Prospek</option>
+          <option value="Rekrut">🔵 Rekrut</option>
+          <option value="Followup">🟣 Followup</option>
+          <option value="Janji Temu">🟡 Janji Temu</option>
+          <option value="Belum Ada">⚪ Belum Ada</option>
+        </select>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="Form.close()">Batal</button>
+      <button class="btn btn-primary" onclick="Form.save()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     EXPORT MODAL
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="export-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Export / Backup</h2>
+      <button class="modal-close" onclick="Export.close()">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:18px;">Filter anggota untuk export PDF.</p>
+
+      <div class="form-group">
+        <label class="form-label">Gender</label>
+        <div class="filter-chips" id="filter-gender">
+          <span class="chip active" data-val="all">Semua</span>
+          <span class="chip" data-val="F">Perempuan</span>
+          <span class="chip" data-val="M">Laki-laki</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Status Pekerjaan</label>
+        <div class="filter-chips" id="filter-kerja">
+          <span class="chip active" data-val="all">Semua</span>
+          <span class="chip" data-val="Bekerja">Bekerja</span>
+          <span class="chip" data-val="Tidak Bekerja">Tidak Bekerja</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Range Usia</label>
+        <div class="range-row">
+          <input type="number" class="form-control" id="filter-usia-min" placeholder="Min" min="0" max="120" />
+          <span>–</span>
+          <input type="number" class="form-control" id="filter-usia-max" placeholder="Max" min="0" max="120" />
+          <span>thn</span>
+        </div>
+      </div>
+
+      <div style="padding:10px 12px;background:var(--bg);border-radius:9px;font-size:13px;color:var(--text2);margin-bottom:16px;">
+        <strong id="export-count">0 anggota</strong> akan diexport
+      </div>
+
+      <div style="border-top:1px solid var(--border);padding-top:16px;">
+        <p style="font-size:12px;color:var(--text3);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Backup & Restore</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-ghost" onclick="Export.downloadJSON()" style="font-size:12px;">⬇ Export JSON</button>
+          <label class="btn btn-ghost" style="font-size:12px;cursor:pointer;">
+            ⬆ Import JSON
+            <input type="file" accept=".json" style="display:none;" onchange="Export.importJSON(this.files[0]); this.value='';" />
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="Export.close()">Batal</button>
+      <button class="btn btn-primary" onclick="Export.generatePDF()">Download PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     BULK REMOVE MODAL
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="bulk-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>🗑 Bulk Remove</h2>
+      <button class="modal-close" onclick="Actions.closeBulkRemove()">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <button class="btn btn-ghost" style="font-size:12px;" onclick="Actions.bulkSelectAll()">Pilih Semua</button>
+        <button class="btn btn-ghost" style="font-size:12px;" onclick="Actions.bulkSelectNone()">Batalkan</button>
+      </div>
+      <div id="bulk-list" style="max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="Actions.closeBulkRemove()">Batal</button>
+      <button class="btn btn-danger" onclick="Actions.confirmBulkRemove()">Hapus Yang Dipilih</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     CONFIRM DIALOG
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <h3 id="confirm-title">Yakin?</h3>
+    <p id="confirm-message">Tindakan ini tidak bisa dibatalkan.</p>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" onclick="Confirm.close()">Batal</button>
+      <button class="btn btn-danger" id="confirm-yes">Ya, Hapus</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TOAST
+══════════════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════════
+     SCRIPTS (order matters)
+══════════════════════════════════════════ -->
+<script src="js/store.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/popup.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/renderer.js"></script>
+<script src="js/canvas.js"></script>
+<script src="js/whiteboard.js"></script>
+<script src="js/form.js"></script>
+<script src="js/export.js"></script>
+<script src="js/actions.js"></script>
+<script src="js/search.js"></script>
+<script src="js/version.js"></script>
+<script src="js/app.js"></script>
+
+<script>
+  /* Whiteboard toggle (updates header button state) */
+  function toggleWhiteboard() {
+    const active = Whiteboard.toggle();
+    document.getElementById('wb-toggle-btn').style.background =
+      active ? 'rgba(255,255,255,0.2)' : '';
+    Toast.show(active ? 'Whiteboard ON — gunakan Apple Pencil' : 'Whiteboard OFF');
+  }
+</script>
+
+<!-- Bulk row styles (small, scoped here) -->
+<style>
+  .bulk-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 8px;
+    cursor: pointer; transition: background 0.1s;
+  }
+  .bulk-row:hover { background: var(--bg); }
+  .bulk-check { width: 16px; height: 16px; cursor: pointer; accent-color: var(--navy); }
+  .bulk-name  { flex: 1; font-size: 13px; font-weight: 600; color: var(--navy); }
+  .bulk-meta  { font-size: 11px; color: var(--text3); }
+</style>
+
+</body>
+</html>
