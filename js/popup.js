@@ -7,15 +7,96 @@ const Popup = (() => {
   const title = document.getElementById('popup-person-name');
   let activeId = null;
 
+  function buildProfileHtml(person) {
+    const rows = [];
+    
+    if (person.usia) {
+      rows.push(`
+        <div class="popup-profile-row">
+          <span class="popup-profile-label">Usia</span>
+          <span class="popup-profile-value">${person.usia} tahun</span>
+        </div>
+      `);
+    }
+
+    if (person.gender) {
+      const genderText = person.gender === 'F' ? 'Perempuan' : 'Laki-laki';
+      rows.push(`
+        <div class="popup-profile-row">
+          <span class="popup-profile-label">Gender</span>
+          <span class="popup-profile-value">${genderText}</span>
+        </div>
+      `);
+    }
+
+    if (person.tempat) {
+      rows.push(`
+        <div class="popup-profile-row">
+          <span class="popup-profile-label">Tempat</span>
+          <span class="popup-profile-value">${person.tempat}</span>
+        </div>
+      `);
+    }
+
+    if (person.pekerjaan) {
+      let pekerjaanText = person.pekerjaan;
+      if (person.pekerjaanDetail) {
+        pekerjaanText += ` — ${person.pekerjaanDetail}`;
+      }
+      rows.push(`
+        <div class="popup-profile-row">
+          <span class="popup-profile-label">Pekerjaan</span>
+          <span class="popup-profile-value">${pekerjaanText}</span>
+        </div>
+      `);
+    }
+
+    if (person.pendidikan) {
+      let pendidikanText = person.pendidikan;
+      if (person.pendidikanDetail) {
+        pendidikanText += ` — ${person.pendidikanDetail}`;
+      }
+      rows.push(`
+        <div class="popup-profile-row">
+          <span class="popup-profile-label">Pendidikan</span>
+          <span class="popup-profile-value">${pendidikanText}</span>
+        </div>
+      `);
+    }
+
+    if (person.tindakan) {
+      rows.push(`
+        <div class="popup-profile-row">
+          <span class="popup-profile-label">Tindakan</span>
+          <span class="popup-profile-value">${person.tindakan}</span>
+        </div>
+      `);
+    }
+
+    return rows.length ? `<div class="popup-profile">${rows.join('')}</div>` : '';
+  }
+
   function open(id, event) {
     activeId = id;
-    title.textContent = Store.get(id)?.nama || 'Unknown';
+    const person = Store.get(id);
+    title.textContent = person?.nama || 'Unknown';
+    
+    // Remove old profile if exists
+    const oldProfile = el.querySelector('.popup-profile');
+    if (oldProfile) oldProfile.remove();
+
+    // Insert profile section after title
+    const profileHtml = buildProfileHtml(person);
+    if (profileHtml) {
+      title.insertAdjacentHTML('afterend', profileHtml);
+    }
+
     el.style.display  = 'block';
 
     const vw = window.innerWidth, vh = window.innerHeight;
     let x = event.clientX + 10, y = event.clientY - 10;
     if (x + 190 > vw) x = event.clientX - 194;
-    if (y + 320 > vh) y = vh - 326;
+    if (y + 420 > vh) y = vh - 426;
     if (y < 60) y = 64;
 
     el.style.left = x + 'px';
@@ -23,7 +104,11 @@ const Popup = (() => {
     event.stopPropagation();
   }
 
-  function close() { el.style.display = 'none'; activeId = null; }
+  function close() { 
+    el.style.display = 'none'; 
+    activeId = null; 
+  }
+  
   function getActiveId() { return activeId; }
 
   document.addEventListener('click', e => {
