@@ -6,17 +6,18 @@
      nama, usia (number), gender (F|M),
      pekerjaan, pekerjaanDetail,
      tempat, pendidikan, pendidikanDetail,
-     tindakan
+     tindakan, locked (boolean)
 */
 
 const Store = (() => {
-  const LS = { persons: 'ft_persons', relations: 'ft_relations' };
+  const LS = { persons: 'ft_persons', relations: 'ft_relations', positions: 'ft_positions' };
   const UNDO_LIMIT = 10;
 
   let persons   = JSON.parse(localStorage.getItem(LS.persons)   || '{}');
   let relations = JSON.parse(localStorage.getItem(LS.relations) || '[]');
+  let positions = JSON.parse(localStorage.getItem(LS.positions) || '{}');
 
-  // Undo/redo stacks hold snapshots { persons, relations }
+  // Undo/redo stacks hold snapshots { persons, relations, positions }
   let undoStack = [];
   let redoStack = [];
 
@@ -25,6 +26,7 @@ const Store = (() => {
     return {
       persons:   JSON.parse(JSON.stringify(persons)),
       relations: JSON.parse(JSON.stringify(relations)),
+      positions: JSON.parse(JSON.stringify(positions)),
     };
   }
 
@@ -38,11 +40,13 @@ const Store = (() => {
   function persist() {
     localStorage.setItem(LS.persons,   JSON.stringify(persons));
     localStorage.setItem(LS.relations, JSON.stringify(relations));
+    localStorage.setItem(LS.positions, JSON.stringify(positions));
   }
 
   function restore(snap) {
     persons   = JSON.parse(JSON.stringify(snap.persons));
     relations = JSON.parse(JSON.stringify(snap.relations));
+    positions = JSON.parse(JSON.stringify(snap.positions));
     persist();
   }
 
@@ -59,7 +63,7 @@ const Store = (() => {
   function add(data) {
     pushUndo();
     const id = uid();
-    persons[id] = { ...data, nama: data.nama || 'Unknown' };
+    persons[id] = { ...data, nama: data.nama || 'Unknown', locked: false };
     persist();
     return id;
   }
@@ -74,6 +78,7 @@ const Store = (() => {
   function remove(id) {
     pushUndo();
     delete persons[id];
+    delete positions[id];
     relations = relations.filter(r => r.from !== id && r.to !== id);
     persist();
   }
@@ -82,8 +87,43 @@ const Store = (() => {
     pushUndo();
     ids.forEach(id => {
       delete persons[id];
+      delete positions[id];
     });
     relations = relations.filter(r => !ids.includes(r.from) && !ids.includes(r.to));
+    persist();
+  }
+
+  /* ── Position management ── */
+  function getPosition(id) {
+    return positions[id];
+  }
+
+  function setPosition(id, x, y) {
+    positions[id] = { x, y };
+    persist();
+  }
+
+  function resetPositions() {
+    positions = {};
+    persist();
+  }
+
+  /* ── Lock/Unlock ── */
+  function setLocked(id, locked) {
+    if (persons[id]) {
+      persons[id].locked = !!locked;
+      persist();
+    }
+  }
+
+  function isLocked(id) {
+    return persons[id]?.locked || false;
+  }
+
+  function setAllLocked(locked) {
+    Object.keys(persons).forEach(id => {
+      persons[id].locked = !!locked;
+    });
     persist();
   }
 
@@ -179,5 +219,7 @@ const Store = (() => {
     filter,
     undo, redo, canUndo, canRedo,
     exportJSON, importJSON,
+    getPosition, setPosition, resetPositions,
+    setLocked, isLocked, setAllLocked,
   };
 })();
