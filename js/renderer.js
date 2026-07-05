@@ -48,6 +48,7 @@ const Renderer = (() => {
   function drawNode(id, person, pos) {
     const gClass = person.gender === 'F' ? 'female' : person.gender === 'M' ? 'male' : '';
     const color  = TINDAKAN_COLORS[person.tindakan];
+    const locked = person.locked;
 
     const el = document.createElement('div');
     el.className  = 'node';
@@ -56,15 +57,17 @@ const Renderer = (() => {
     el.dataset.id = id;
 
     el.innerHTML = `
-      <div class="node-circle ${gClass}">
+      <div class="node-circle ${gClass} ${locked ? 'locked' : ''}">
         ${initials(person.nama)}
-        <div class="node-anchor"></div>
         ${color ? `<div class="node-tindakan" style="background:${color}"></div>` : ''}
       </div>
       <div class="node-name">${person.nama || 'Unknown'}</div>
     `;
 
     el.addEventListener('click', e => { e.stopPropagation(); Popup.open(id, e); });
+    el.addEventListener('mousedown', e => { e.stopPropagation(); Drag.start(id, e); });
+    el.addEventListener('touchstart', e => { e.stopPropagation(); Drag.start(id, e); }, false);
+    
     canvas.appendChild(el);
   }
 
