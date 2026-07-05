@@ -14,13 +14,9 @@ const Drag = (() => {
 
   function start(id, event) {
     if (Store.isLocked(id)) return;
-    if (Canvas.isPanning) return; // Don't drag if canvas is panning
-
+    
     isDragging = true;
     draggedId = id;
-    
-    const person = Store.get(id);
-    if (person.locked) return;
 
     const node = document.querySelector(`.node[data-id="${id}"]`);
     if (!node) return;
@@ -34,8 +30,8 @@ const Drag = (() => {
 
     dragStart = { x: clientX, y: clientY };
     dragOffset = {
-      x: rect.left - canvasRect.left,
-      y: rect.top - canvasRect.top,
+      x: clientX - rect.left,
+      y: clientY - rect.top,
     };
 
     node.style.zIndex = '1000';
@@ -43,6 +39,7 @@ const Drag = (() => {
     wrap.style.cursor = 'grabbing';
 
     Popup.close();
+    event.preventDefault();
   }
 
   function move(event) {
@@ -52,10 +49,11 @@ const Drag = (() => {
     const clientY = event.type.includes('touch') ? event.touches[0].clientY : event.clientY;
 
     const canvasRect = wrap.getBoundingClientRect();
+    const treeRect = canvas.getBoundingClientRect();
 
-    // Calculate new position
-    const newX = clientX - canvasRect.left - dragOffset.x;
-    const newY = clientY - canvasRect.top - dragOffset.y;
+    // Calculate new position relative to canvas
+    const newX = clientX - treeRect.left;
+    const newY = clientY - treeRect.top;
 
     // Update node position
     const node = document.querySelector(`.node[data-id="${draggedId}"]`);
@@ -64,7 +62,7 @@ const Drag = (() => {
       node.style.top = newY + 'px';
     }
 
-    // Redraw lines
+    // Redraw lines in real-time
     redrawLines();
   }
 
@@ -95,21 +93,21 @@ const Drag = (() => {
     const positions = {};
     document.querySelectorAll('.node').forEach(el => {
       const id = el.dataset.id;
-      positions[id] = {
-        x: parseFloat(el.style.left),
-        y: parseFloat(el.style.top),
-      };
+      const x = parseFloat(el.style.left) || parseFloat(el.getAttribute('data-x')) || 0;
+      const y = parseFloat(el.style.top) || parseFloat(el.getAttribute('data-y')) || 0;
+      positions[id] = { x, y };
     });
 
+    const ANCHOR = 30;
     Store.getRelations().forEach(rel => {
       const a = positions[rel.from], b = positions[rel.to];
       if (!a || !b) return;
 
       const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      line.setAttribute('x1', a.x + 30);
-      line.setAttribute('y1', a.y + 30);
-      line.setAttribute('x2', b.x + 30);
-      line.setAttribute('y2', b.y + 30);
+      line.setAttribute('x1', a.x + ANCHOR);
+      line.setAttribute('y1', a.y + ANCHOR);
+      line.setAttribute('x2', b.x + ANCHOR);
+      line.setAttribute('y2', b.y + ANCHOR);
       line.setAttribute('stroke', rel.type === 'spouse' ? '#ec4899' : '#334155');
       line.setAttribute('stroke-width', '2');
       line.setAttribute('stroke-dasharray', rel.type === 'spouse' ? '4,3' : '5,4');
