@@ -44,6 +44,8 @@
     <button class="btn btn-outline" id="wb-toggle-btn" onclick="toggleWhiteboard()" title="Whiteboard">✏️</button>
     <!-- Multi-select for group drag -->
     <button class="btn btn-outline" id="select-toggle-btn" onclick="Drag.toggleSelectMode()" title="Pilih beberapa anggota untuk digeser bareng">☑ Pilih</button>
+    <!-- Save current layout -->
+    <button class="btn btn-outline" onclick="Actions.saveLayout()" title="Kunci posisi semua circle sekarang">💾 Layout</button>
     <!-- Bulk remove -->
     <button class="btn btn-outline" onclick="Actions.openBulkRemove()">🗑 Bulk</button>
     <!-- Export -->
@@ -124,6 +126,13 @@
       <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
     </svg>
     Tambah Pasangan →
+  </button>
+
+  <button class="popup-btn" id="popup-lock-couple-btn" style="display:none;" onclick="Actions.toggleCoupleLock()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+    </svg>
+    <span id="popup-lock-couple-label">Kunci Pasangan</span>
   </button>
 
   <button class="popup-btn danger" onclick="Actions.deletePerson()">
