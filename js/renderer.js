@@ -132,7 +132,7 @@ const Renderer = (() => {
   /* ── Draw one node ── */
   function drawNode(id, person, pos) {
     const gClass   = person.gender === 'F' ? 'female' : person.gender === 'M' ? 'male' : '';
-    const color    = TINDAKAN_COLORS[person.tindakan];
+    const dotColor = TINDAKAN_COLORS[person.tindakan] || '#94a3b8'; // grey default
     const locked   = person.locked;
     const selected = Drag.getSelected().has(id);
 
@@ -145,7 +145,7 @@ const Renderer = (() => {
     el.innerHTML = `
       <div class="node-circle ${gClass} ${locked ? 'locked' : ''}">
         ${initials(person.nama)}
-        ${color ? `<div class="node-tindakan" style="background:${color}"></div>` : ''}
+        <div class="node-tindakan" style="background:${dotColor}"></div>
       </div>
       <div class="node-name">${person.nama || 'Unknown'}</div>
     `;
