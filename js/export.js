@@ -39,11 +39,11 @@ const Export = (() => {
 
   /* ── Tindakan colors (for PDF badges) ── */
   const TINDAKAN = {
+    'Belum Ada':  [148,163, 184],
     'Prospek':    [34, 197,  94],
     'Rekrut':     [59, 130, 246],
     'Followup':   [168, 85, 247],
     'Janji Temu': [234,179,   8],
-    'Belum Ada':  [148,163, 184],
   };
 
   /* ── Generate PDF ── */

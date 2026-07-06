@@ -14,7 +14,7 @@ const Renderer = (() => {
   const TINDAKAN_COLORS = {
     'Prospek':    '#22c55e',
     'Rekrut':     '#3b82f6',
-    'Followup':   '#a855f7',
+    'Followup':   '#c184fb',
     'Janji Temu': '#eab308',
     'Belum Ada':  '#94a3b8',
   };
