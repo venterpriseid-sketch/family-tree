@@ -136,5 +136,5 @@ const Canvas = (() => {
     if (e.touches.length === 0) panning = false;
   });
 
-  return { centerFirst, zoomIn, zoomOut, isPanning: () => panning };
+  return { centerFirst, zoomIn, zoomOut, isPanning: () => panning, getScale: () => scale };
 })();
