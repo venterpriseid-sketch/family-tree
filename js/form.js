@@ -72,8 +72,8 @@ const Form = (() => {
     F.pendidikanDetail().value = person.pendidikanDetail || '';
     F.tindakan().value         = person.tindakan         || '';
     setGender(person.gender || '');
-    toggleDetailVisibility('pekerjaan');
-    toggleDetailVisibility('pendidikan');
+    //toggleDetailVisibility('pekerjaan');
+    //toggleDetailVisibility('pendidikan');
   }
 
   function openAddRelation(type) {

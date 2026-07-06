@@ -186,14 +186,14 @@
       <div class="form-group">
         <label class="form-label">Pendidikan</label>
         <select class="form-control" id="f-pendidikan" onchange="Form.toggleDetailVisibility('pendidikan')">
-          <option value="">Pilih pendidikan</option>
+          <option value="">Tidak Ada</option>
           <option>PAUD</option><option>SD</option><option>SMP</option>
-          <option>SMA</option><option>KULIAH</option><option>TIDAK SATUPUN</option>
+          <option>SMA</option><option>Kuliah</option>
         </select>
         <div class="subsection" id="detail-pendidikan" style="display:none;">
           <div class="form-group">
             <label class="form-label">Detail Pendidikan</label>
-            <textarea class="form-control" id="f-pendidikan-detail" placeholder="Contoh: Kuliah di UI Teknik Informatika"></textarea>
+            <textarea class="form-control" id="f-pendidikan-detail" placeholder="Contoh: Kuliah di UNPRI S1 Jurusan Hukum"></textarea>
           </div>
         </div>
       </div>
@@ -201,12 +201,11 @@
       <div class="form-group">
         <label class="form-label">Tindakan Terakhir</label>
         <select class="form-control" id="f-tindakan">
-          <option value="">Pilih tindakan</option>
+          <option value="Belum Ada">⚪ Belum Ada</option>
           <option value="Prospek">🟢 Prospek</option>
           <option value="Rekrut">🔵 Rekrut</option>
           <option value="Followup">🟣 Followup</option>
           <option value="Janji Temu">🟡 Janji Temu</option>
-          <option value="Belum Ada">⚪ Belum Ada</option>
         </select>
       </div>
 
