@@ -39,19 +39,6 @@ const Drag = (() => {
     return saved ? { ...saved } : { x: 60, y: 60 };
   }
 
-  /* Spouses always move together — walk the whole spouse chain */
-  function coupleClosure(id) {
-    const seen  = new Set([id]);
-    const queue = [id];
-    while (queue.length) {
-      const cur = queue.pop();
-      Store.getSpouses(cur).forEach(s => {
-        if (!seen.has(s)) { seen.add(s); queue.push(s); }
-      });
-    }
-    return seen;
-  }
-
   /* ── Start (mousedown / touchstart) ── */
   function start(id, event) {
     if (Store.isLocked(id) || isDragging) return;
@@ -76,9 +63,15 @@ const Drag = (() => {
     isDragging = true;
     dragStartClient = { x: client.x, y: client.y };
 
+    // By default husband/wife move independently. If the couple has been
+    // explicitly locked (via the popup), dragging one brings the other.
     const base = (selectMode && selectedIds.has(id)) ? new Set(selectedIds) : new Set([id]);
-    const full = new Set();
-    base.forEach(pid => coupleClosure(pid).forEach(x => full.add(x)));
+    const full = new Set(base);
+    base.forEach(pid => {
+      Store.getSpouses(pid).forEach(sid => {
+        if (Store.isCoupleLocked(pid, sid)) full.add(sid);
+      });
+    });
 
     movingSet = new Map();
     full.forEach(pid => {

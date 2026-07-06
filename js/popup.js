@@ -91,6 +91,18 @@ const Popup = (() => {
       title.insertAdjacentHTML('afterend', profileHtml);
     }
 
+    // Lock-couple button only makes sense if this person has a spouse
+    const lockBtn   = document.getElementById('popup-lock-couple-btn');
+    const lockLabel = document.getElementById('popup-lock-couple-label');
+    const spouses   = Store.getSpouses(id);
+    if (spouses.length) {
+      const locked = Store.isCoupleLocked(id, spouses[0]);
+      lockBtn.style.display = 'flex';
+      lockLabel.textContent = locked ? 'Lepas Kunci Pasangan (bisa gerak sendiri)' : 'Kunci Pasangan (gerak bareng)';
+    } else {
+      lockBtn.style.display = 'none';
+    }
+
     el.style.display  = 'block';
 
     const vw = window.innerWidth, vh = window.innerHeight;
