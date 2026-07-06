@@ -10,13 +10,12 @@
 */
 
 const Store = (() => {
-  const LS = { persons: 'ft_persons', relations: 'ft_relations', positions: 'ft_positions', coupleLocks: 'ft_couple_locks' };
+  const LS = { persons: 'ft_persons', relations: 'ft_relations', positions: 'ft_positions' };
   const UNDO_LIMIT = 10;
 
-  let persons     = JSON.parse(localStorage.getItem(LS.persons)     || '{}');
-  let relations   = JSON.parse(localStorage.getItem(LS.relations)   || '[]');
-  let positions   = JSON.parse(localStorage.getItem(LS.positions)   || '{}');
-  let coupleLocks = JSON.parse(localStorage.getItem(LS.coupleLocks) || '{}'); // pairKey -> true/false
+  let persons   = JSON.parse(localStorage.getItem(LS.persons)   || '{}');
+  let relations = JSON.parse(localStorage.getItem(LS.relations) || '[]');
+  let positions = JSON.parse(localStorage.getItem(LS.positions) || '{}');
 
   // Undo/redo stacks hold snapshots { persons, relations, positions }
   let undoStack = [];
@@ -25,10 +24,9 @@ const Store = (() => {
   /* ── Snapshot helpers ── */
   function snapshot() {
     return {
-      persons:     JSON.parse(JSON.stringify(persons)),
-      relations:   JSON.parse(JSON.stringify(relations)),
-      positions:   JSON.parse(JSON.stringify(positions)),
-      coupleLocks: JSON.parse(JSON.stringify(coupleLocks)),
+      persons:   JSON.parse(JSON.stringify(persons)),
+      relations: JSON.parse(JSON.stringify(relations)),
+      positions: JSON.parse(JSON.stringify(positions)),
     };
   }
 
@@ -40,17 +38,15 @@ const Store = (() => {
 
   /* ── Persist ── */
   function persist() {
-    localStorage.setItem(LS.persons,     JSON.stringify(persons));
-    localStorage.setItem(LS.relations,   JSON.stringify(relations));
-    localStorage.setItem(LS.positions,   JSON.stringify(positions));
-    localStorage.setItem(LS.coupleLocks, JSON.stringify(coupleLocks));
+    localStorage.setItem(LS.persons,   JSON.stringify(persons));
+    localStorage.setItem(LS.relations, JSON.stringify(relations));
+    localStorage.setItem(LS.positions, JSON.stringify(positions));
   }
 
   function restore(snap) {
-    persons     = JSON.parse(JSON.stringify(snap.persons));
-    relations   = JSON.parse(JSON.stringify(snap.relations));
-    positions   = JSON.parse(JSON.stringify(snap.positions));
-    coupleLocks = JSON.parse(JSON.stringify(snap.coupleLocks || {}));
+    persons   = JSON.parse(JSON.stringify(snap.persons));
+    relations = JSON.parse(JSON.stringify(snap.relations));
+    positions = JSON.parse(JSON.stringify(snap.positions));
     persist();
   }
 
@@ -84,7 +80,6 @@ const Store = (() => {
     delete persons[id];
     delete positions[id];
     relations = relations.filter(r => r.from !== id && r.to !== id);
-    Object.keys(coupleLocks).forEach(k => { if (k.split('|').includes(id)) delete coupleLocks[k]; });
     persist();
   }
 
@@ -95,7 +90,6 @@ const Store = (() => {
       delete positions[id];
     });
     relations = relations.filter(r => !ids.includes(r.from) && !ids.includes(r.to));
-    Object.keys(coupleLocks).forEach(k => { if (k.split('|').some(p => ids.includes(p))) delete coupleLocks[k]; });
     persist();
   }
 
@@ -168,18 +162,6 @@ const Store = (() => {
     return getParents(id).length > 0;
   }
 
-  /* ── Couple lock (opt-in: locked pairs move together when dragged) ── */
-  function pairKey(a, b) { return [a, b].sort().join('|'); }
-
-  function isCoupleLocked(a, b) {
-    return !!coupleLocks[pairKey(a, b)];
-  }
-
-  function setCoupleLock(a, b, locked) {
-    coupleLocks[pairKey(a, b)] = !!locked;
-    persist();
-  }
-
   /* ── Filter (for export) ── */
   function filter({ gender, kerja, usiaMin, usiaMax }) {
     return Object.values(persons).filter(p => {
@@ -212,7 +194,7 @@ const Store = (() => {
 
   /* ── Backup / Restore JSON ── */
   function exportJSON() {
-    return JSON.stringify({ persons, relations, coupleLocks }, null, 2);
+    return JSON.stringify({ persons, relations }, null, 2);
   }
 
   function importJSON(jsonStr) {
@@ -220,9 +202,8 @@ const Store = (() => {
       const data = JSON.parse(jsonStr);
       if (!data.persons || !data.relations) throw new Error('Invalid format');
       pushUndo();
-      persons     = data.persons;
-      relations   = data.relations;
-      coupleLocks = data.coupleLocks || {};
+      persons   = data.persons;
+      relations = data.relations;
       persist();
       return true;
     } catch {
@@ -235,7 +216,6 @@ const Store = (() => {
     add, update, remove, removeMany,
     getRelations, addRelation,
     getParents, getChildren, getSpouses, hasParent,
-    isCoupleLocked, setCoupleLock,
     filter,
     undo, redo, canUndo, canRedo,
     exportJSON, importJSON,

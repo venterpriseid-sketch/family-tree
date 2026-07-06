@@ -103,9 +103,6 @@ const Form = (() => {
       Store.update(contextPersonId, data);
       Toast.show('Info diupdate');
     } else {
-      // Snapshot BEFORE adding, so we know where contextPersonId actually
-      // is right now (whether manually placed or auto-computed).
-      const snapshot = contextPersonId ? Layout.compute() : null;
       const newId = Store.add(data);
 
       if (contextPersonId && mode !== 'root') {
@@ -113,18 +110,6 @@ const Form = (() => {
         // child   → new node is BELOW  contextPerson (downline)
         // spouse  → new node is BESIDE contextPerson (same line)
         Store.addRelation(mode, contextPersonId, newId);
-
-        // A child added from just one parent's popup still belongs to
-        // BOTH parents when that parent has a spouse — link the spouse
-        // too, otherwise the couple-anchor line never has both parents
-        // it needs and falls back to a line straight from one parent.
-        if (mode === 'child') {
-          Store.getSpouses(contextPersonId).forEach(spouseId => {
-            Store.addRelation('child', spouseId, newId);
-          });
-        }
-
-        Layout.placeNear(newId, contextPersonId, mode, snapshot);
       }
 
       Toast.show(`${data.nama} ditambahkan`);

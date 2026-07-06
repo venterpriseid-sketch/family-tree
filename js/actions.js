@@ -75,30 +75,6 @@ const Actions = (() => {
     document.querySelectorAll('.bulk-check').forEach(c => c.checked = false);
   }
 
-  /* ── Couple lock ── */
-  function toggleCoupleLock() {
-    const id = Popup.getActiveId();
-    if (!id) return;
-    const spouses = Store.getSpouses(id);
-    if (!spouses.length) return;
-    const newState = !Store.isCoupleLocked(id, spouses[0]);
-    spouses.forEach(s => Store.setCoupleLock(id, s, newState));
-    Popup.close();
-    Toast.show(newState ? 'Pasangan dikunci — geser salah satu, dua-duanya ikut' : 'Kunci dilepas — sekarang bisa gerak sendiri-sendiri');
-  }
-
-  /* ── Save current layout ── */
-  function saveLayout() {
-    const nodes = document.querySelectorAll('.node');
-    if (!nodes.length) { Toast.show('Belum ada anggota'); return; }
-    nodes.forEach(el => {
-      const x = parseFloat(el.style.left) || 0;
-      const y = parseFloat(el.style.top) || 0;
-      Store.setPosition(el.dataset.id, x, y);
-    });
-    Toast.show('Layout disimpan ✓');
-  }
-
   /* ── Undo / Redo ── */
   function undo() {
     if (Store.undo()) { Renderer.render(); Toast.show('Undo'); }
@@ -117,5 +93,5 @@ const Actions = (() => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'y') { e.preventDefault(); redo(); }
   });
 
-  return { deletePerson, openBulkRemove, closeBulkRemove, confirmBulkRemove, bulkSelectAll, bulkSelectNone, saveLayout, toggleCoupleLock, undo, redo };
+  return { deletePerson, openBulkRemove, closeBulkRemove, confirmBulkRemove, bulkSelectAll, bulkSelectNone, undo, redo };
 })();
