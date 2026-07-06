@@ -42,6 +42,8 @@
     <button class="btn btn-outline" onclick="Actions.redo()" title="Redo (⌘⇧Z)">↪</button>
     <!-- Whiteboard toggle -->
     <button class="btn btn-outline" id="wb-toggle-btn" onclick="toggleWhiteboard()" title="Whiteboard">✏️</button>
+    <!-- Multi-select for group drag -->
+    <button class="btn btn-outline" id="select-toggle-btn" onclick="Drag.toggleSelectMode()" title="Pilih beberapa anggota untuk digeser bareng">☑ Pilih</button>
     <!-- Bulk remove -->
     <button class="btn btn-outline" onclick="Actions.openBulkRemove()">🗑 Bulk</button>
     <!-- Export -->
@@ -331,6 +333,7 @@
 <script src="js/layout.js"></script>
 <script src="js/renderer.js"></script>
 <script src="js/canvas.js"></script>
+<script src="js/drag.js"></script>
 <script src="js/whiteboard.js"></script>
 <script src="js/form.js"></script>
 <script src="js/export.js"></script>
