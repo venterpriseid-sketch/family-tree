@@ -5,7 +5,7 @@
    ═══════════════════════════════════ */
 
 // This version string is replaced by GitHub Actions on each deploy
-const APP_VERSION  = '1.10';
+const APP_VERSION  = '1.11';
 const CACHE_NAME   = `family-tree-v${APP_VERSION}`;
 
 const ASSETS = [
